@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html xmlns:v-on="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Vue.js test</title>
+    <script src="https://unpkg.com/vue@2.5.22/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+
+<style>
+    #app {
+        margin: 300px auto;
+        width: 600px;
+        border: 2px solid gray;
+
+    }
+    #title {
+        margin: 20px auto;
+        text-align: center;
+        font-weight: bold;
+        font-size: 2rem;
+    }
+    #box-todo-input {
+        text-align: center;
+    }
+    #todo-input {
+        margin: auto 10px;
+        padding: 5px;
+        width: 550px;
+        height: 30px;
+        font-size: 1.2rem;
+    }
+    #todo-list {
+        min-height: 300px;
+    }
+    #todo-list ul {
+        list-style-type: none;
+    }
+    #todo-list ul li {
+        margin-left: -20px;
+    }
+    .todo {
+        font-size: 1.2rem;
+    }
+    .todo table {
+        width: 550px;
+    }
+    .todo table .td-check,
+    .todo table .td-delete {
+        width: 30px;
+        text-align: left;
+    }
+    .btn-delete {
+        width: 50px;
+        height: 25px;
+    }
+    #box-filter {
+        text-align: center;
+    }
+    #box-filter table {
+        width: 100%;
+    }
+    #box-filter table td {
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+
+
+</style>
+<body>
+<div id="app">
+    <div id="title">
+        {{title}}
+    </div>
+    <div id="box-todo-input">
+        <input type="text" id="todo-input" placeholder="일정을 입력 하세요!!" v-model="newTodo" v-on:keyup="addTodo">
+    </div>
+    <div id="todo-list">
+        <ul>
+            <li class="todo" v-for="todo in filterList">
+                <table>
+                    <tr>
+                        <td class="td-check"><input type="checkbox" class="todo-check" v-model="todo.checked"></td>
+                        <td class="td-message">{{todo.text}}</td>
+                        <td class="td-delete"><button class="btn-delete" v-on:click="removeTodo(todo)">X</button></td>
+                    </tr>
+                </table>
+
+            </li>
+        </ul>
+    </div>
+    <div id="box-filter">
+        <table>
+            <tr>
+                <td><input type="radio" name="filter" id="filter-all" checked="checked" v-on:click="filter('all')"> <label for="filter-all">All</label></td>
+                <td><input type="radio" name="filter" id="filter-todo" v-on:click="filter('todo')"> <label for="filter-todo">Todo</label></td>
+                <td><input type="radio" name="filter" id="filter-done" v-on:click="filter('done')"> <label for="filter-done">Done</label></td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+
+
+<script type="text/javascript">
+'use strict';
+
+let app = new Vue({
+    el: '#app',
+    data: {
+        title: 'Todo APP',
+        newTodo: '',
+        todoIndex: 3,
+        status: 'all',
+        todoList: [],
+        filterList: [],
+    },
+    created: function() {
+        let self = this;
+        axios.get('data.json')
+            .then(function(response) {
+                self.todoList = response.data.data;
+                self.filterList = response.data.data;
+            })
+            .catch(function(err) {
+                console.log(err);
+            });
+    },
+    methods: {
+        addTodo: function(event) {
+            if(this.newTodo == '') {
+                return;
+            }
+            if(event.key == 'Enter') {
+                this.todoList.push({id: ++this.todoIndex, checked: false, text: this.newTodo});
+                this.newTodo = '';
+            }
+        },
+        removeTodo: function(todo) {
+            this.todoList.splice(this.todoList.indexOf(todo), 1);
+        },
+        filter(status) {
+            this.status = status;
+        },
+        showList: function() {
+            if(this.status == 'all') {
+                this.filterList = this.todoList.filter(function (todo) {
+                    return todo;
+                });
+            } else if(this.status == 'todo') {
+                this.filterList = this.todoList.filter(function (todo) {
+                    if (todo.checked == false) {
+                        return todo;
+                    }
+                });
+            } else if(this.status == 'done') {
+                this.filterList = this.todoList.filter(function (todo) {
+                    if (todo.checked == true) {
+                        return todo;
+                    }
+                });
+            }
+        },
+    },
+    watch: {
+        todoList: {
+            handler: function(val, oldVal) {
+                this.showList();
+            }
+        },
+        status: {
+            handler: function(val, oldVal) {
+                this.showList();
+            }
+        },
+    }
+})
+
+</script>
+</body>
+
+</html>
