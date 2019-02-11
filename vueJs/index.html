@@ -117,7 +117,7 @@ let app = new Vue({
     },
     created: function() {
         let self = this;
-        axios.get('data.json')
+        axios.get('./data.json')
             .then(function(response) {
                 self.todoList = response.data.data;
                 self.filterList = response.data.data;
